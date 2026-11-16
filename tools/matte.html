@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Character cut-out tool</title>
+<!--
+  Cuts the character out of its plain studio background and turns the floor shadow into a
+  real transparent shadow, so the character can stand on any backdrop.
+
+  Used by tools/build-character.sh, which runs this page in headless Chrome and writes
+  the results to assets/character/pose-N.webp. Open it in a browser to preview the results.
+-->
+<style>body{margin:0;background:#8aa37f;display:flex;flex-wrap:wrap}img{width:19%;margin:.5%}</style>
+<pre id="out" hidden></pre>
+<script>
+// Regions that must never be treated as background, per pose: [x0, y0, x1, y1] in pixels.
+const PROTECT = { 5: [[[335, 1040], [695, 1040], [695, 1402], [505, 1448], [335, 1402]]] };
+// Background pockets enclosed by the character (between the legs), per pose: [x, y] seed points.
+const SEEDS = {
+  1: [[233, 1465]],
+  2: [[460, 1476]],
+  3: [[477, 1465]],
+  4: [[424, 1476]],
+  5: [[100, 1430], [505, 1482], [925, 1430]],
+};
+
+function load(url) {
+  return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+}
+
+async function matte(n) {
+  const img = await load(`source/pose-${n}.webp`);
+  const w = img.naturalWidth, h = img.naturalHeight;
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.drawImage(img, 0, 0);
+  const im = g.getImageData(0, 0, w, h), d = im.data, N = w * h;
+
+  // Reference background colour: median of the top-left and top-right corners.
+  const sample = [];
+  for (let y = 4; y < 60; y += 4) for (let x = 4; x < 60; x += 4) { sample.push(y * w + x, y * w + (w - 1 - x)); }
+  const med = (k) => sample.map((i) => d[i * 4 + k]).sort((a, b) => a - b)[sample.length >> 1];
+  const R = med(0), G = med(1), B = med(2), refL = (R + G + B) / 3, refGR = G / R, refBR = B / R;
+
+  const lum = new Float32Array(N);
+  for (let i = 0; i < N; i++) lum[i] = (d[i * 4] + d[i * 4 + 1] + d[i * 4 + 2]) / 3;
+  const grad = (i, x, y) =>
+    Math.abs(lum[x < w - 1 ? i + 1 : i] - lum[x > 0 ? i - 1 : i]) + Math.abs(lum[y < h - 1 ? i + w : i] - lum[y > 0 ? i - w : i]);
+  const bgLike = (i, tight) => {
+    const r = d[i * 4] || 1, gr = d[i * 4 + 1] / r, br = d[i * 4 + 2] / r;
+    return Math.abs(gr - refGR) < (tight ? 0.02 : 0.035) && Math.abs(br - refBR) < (tight ? 0.03 : 0.05) && lum[i] > refL * (tight ? 0.93 : 0.38) && lum[i] < refL * 1.06;
+  };
+
+  const protect = new Uint8Array(N);
+  if (PROTECT[n]) {
+    const pc = document.createElement('canvas'); pc.width = w; pc.height = h;
+    const pg = pc.getContext('2d');
+    for (const poly of PROTECT[n]) { pg.beginPath(); poly.forEach(([x, y], k) => (k ? pg.lineTo(x, y) : pg.moveTo(x, y))); pg.fill(); }
+    const pd = pg.getImageData(0, 0, w, h).data;
+    for (let i = 0; i < N; i++) protect[i] = pd[i * 4 + 3] > 127 ? 1 : 0;
+  }
+
+  // Flood-fill the background in from the image border, stopping at silhouette edges.
+  const bg = new Uint8Array(N), stack = [];
+  const push = (i) => { if (!bg[i] && !protect[i]) { bg[i] = 1; stack.push(i); } };
+  for (let x = 0; x < w; x++) { push(x); push((h - 1) * w + x); }
+  for (let y = 0; y < h; y++) { push(y * w); push(y * w + w - 1); }
+  while (stack.length) {
+    const i = stack.pop(), x = i % w, y = (i / w) | 0;
+    for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) {
+      if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+      const j = ny * w + nx;
+      if (bg[j] || protect[j]) continue;
+      if (bgLike(j, false) && grad(j, nx, ny) < 26) { bg[j] = 1; stack.push(j); }
+    }
+  }
+  // Enclosed pockets: flood out from each seed through pixels close to the seed's own colour.
+  // The gap between the legs (standing poses): bright, neutral pixels in the trouser band.
+  const seeds = [...(SEEDS[n] || [])];
+  if (n !== 5) {
+    for (let y = Math.round(h * 0.6); y < h * 0.88; y += 6) for (let x = 0; x < w; x += 6) {
+      const i = y * w + x, o = i * 4;
+      if (bg[i] || lum[i] < refL * 0.86) continue;
+      // Warm and nearly neutral = studio backdrop; light denim is bluer (b > r), so it is skipped.
+      if (d[o] - d[o + 2] > 5 && d[o] - d[o + 2] < 34 && d[o] >= d[o + 1]) seeds.push([x, y]);
+    }
+  }
+  for (const [sx, sy] of seeds) {
+    if (bg[sy * w + sx]) continue;
+    const s0 = (sy * w + sx) * 4, sr = d[s0], sg = d[s0 + 1], sb = d[s0 + 2];
+    const near = (j) => Math.abs(d[j * 4] - sr) < 22 && Math.abs(d[j * 4 + 1] - sg) < 22 && Math.abs(d[j * 4 + 2] - sb) < 22;
+    if (sr < 150) continue; // seed landed on the character, not the backdrop
+    const st = [sy * w + sx];
+    bg[sy * w + sx] = 1;
+    while (st.length) {
+      const i = st.pop(), x = i % w, y = (i / w) | 0;
+      for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) {
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        const j = ny * w + nx;
+        if (bg[j] || protect[j]) continue;
+        if (near(j) && grad(j, nx, ny) < 14) { bg[j] = 1; st.push(j); }
+      }
+    }
+  }
+  // Background showing through gaps in the hair is not connected to the border: remove it by colour.
+  for (let y = 0; y < h * 0.2; y++) for (let x = 0; x < w; x++) { const i = y * w + x; if (!bg[i] && bgLike(i, true)) bg[i] = 1; }
+
+  // Grow the background by 2px to swallow the anti-aliased halo around the silhouette.
+  for (let pass = 0; pass < 2; pass++) {
+    const next = bg.slice();
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x;
+      if (!bg[i] && !protect[i] && (bg[i - 1] || bg[i + 1] || bg[i - w] || bg[i + w])) next[i] = 1;
+    }
+    bg.set(next);
+  }
+
+  // Alpha: character opaque with a 1px feather; background becomes a soft black floor shadow.
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x, o = i * 4;
+    if (bg[i]) {
+      const s = y > h * 0.8 ? Math.min(0.55, Math.max(0, (refL - lum[i]) / refL - 0.035) * 2.4) : 0;
+      d[o] = 18; d[o + 1] = 22; d[o + 2] = 18; d[o + 3] = Math.round(s * 255);
+    } else {
+      const edge = x > 0 && y > 0 && x < w - 1 && y < h - 1 && (bg[i - 1] || bg[i + 1] || bg[i - w] || bg[i + w]);
+      d[o + 3] = edge ? 150 : 255;
+    }
+  }
+  g.putImageData(im, 0, 0);
+  return c.toDataURL('image/webp', 0.92);
+}
+
+(async () => {
+  const out = {};
+  const debug = +new URLSearchParams(location.search).get('debug');
+  for (const n of debug ? [debug] : [1, 2, 3, 4, 5]) {
+    out[n] = await matte(n);
+    const i = new Image(); i.src = out[n]; document.body.appendChild(i);
+    if (debug) {
+      // Full-size view with the seed points marked, for placing SEEDS / PROTECT.
+      i.style.cssText = 'width:auto;margin:0';
+      document.body.style.display = 'block'; document.body.style.position = 'relative';
+      for (const [x, y] of SEEDS[n] || []) {
+        const dot = document.createElement('i');
+        dot.style.cssText = `position:absolute;left:${x - 4}px;top:${y - 4}px;width:8px;height:8px;background:red;border-radius:50%`;
+        document.body.appendChild(dot);
+      }
+    }
+  }
+  document.getElementById('out').textContent = JSON.stringify(out);
+  document.title = 'done';
+})();
+</script>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Aryan</title>
+  <meta name="description" content="Aryan Tyagi — full-stack AI developer. A scroll-driven 3D résumé: RAG pipelines, AI agents and real-time web apps.">
+  <meta name="theme-color" content="#0a0e16">
+  <meta property="og:title" content="About Aryan — Aryan Tyagi">
+  <meta property="og:description" content="Full-stack AI developer. A scroll-driven 3D résumé.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236f906f'/%3E%3Ccircle cx='23' cy='32' r='8' fill='%23f4f1ea'/%3E%3Ccircle cx='41' cy='32' r='8' fill='%23f4f1ea'/%3E%3Ccircle cx='25' cy='32' r='3.5' fill='%231a1f22'/%3E%3Ccircle cx='43' cy='32' r='3.5' fill='%231a1f22'/%3E%3C/svg%3E">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mansalva&family=Cormorant+Upright:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Loading mask: covers the page until the 3D stage has drawn its first frame -->
+  <div class="loading-screen" id="loading" aria-hidden="true">
+    <div class="loading-ring">
+      <svg viewBox="0 0 80 80">
+        <circle class="lr-track" cx="40" cy="40" r="34"/>
+        <circle class="lr-arc" id="loading-arc" cx="40" cy="40" r="34"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Fixed 3D background -->
+  <div class="scene-bg"><canvas id="stage"></canvas></div>
+
+  <!-- Scroll-driven overlays between the 3D stage and the content -->
+  <div class="scrim" id="scrim" aria-hidden="true"></div>
+  <div class="stage-fog" id="fog" aria-hidden="true"></div>
+  <div class="glass-rail" id="rail" aria-hidden="true"></div>
+
+  <!-- Hero decoration: hairline frame, corner marks, corner metadata -->
+  <div class="hero-chrome" id="chrome" aria-hidden="true">
+    <div class="hero-frame"></div>
+    <span class="hero-mark tl">+</span>
+    <span class="hero-mark tr">+</span>
+    <span class="hero-mark bl">+</span>
+    <span class="hero-mark br">+</span>
+    <div class="hero-meta hm-tl">
+      <span class="hm-name">Aryan Tyagi</span>
+      <span>Full-Stack AI Developer</span>
+    </div>
+    <div class="hero-meta hm-tr">Portfolio — 2026</div>
+    <div class="hero-meta hm-bl">Code · Agents · Ship</div>
+    <div class="hero-meta hm-right">Based in Meerut, India</div>
+  </div>
+
+  <div class="top-actions">
+    <a class="icon-btn" href="https://github.com/aryanty4gi" target="_blank" rel="noopener" aria-label="GitHub">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.37-3.37-1.37-.46-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.36 9.36 0 0 1 12 6.96c.85 0 1.71.12 2.5.35 1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.81 0 .27.18.6.69.49A10.26 10.26 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
+    </a>
+    <a class="lang-toggle" href="assets/Aryan-Tyagi-CV.pdf" target="_blank" rel="noopener">Résumé ↓</a>
+  </div>
+
+  <!-- Full-screen film grain (multiply blend) -->
+  <div class="noise" aria-hidden="true"><canvas id="noise"></canvas></div>
+
+  <main class="content">
+
+    <!-- ───────── Hero / About ───────── -->
+    <section class="hero" id="home">
+      <div class="about" id="about">
+        <div class="about-intro">
+          <h1 class="about-title" id="about-title">About Aryan</h1>
+          <p class="about-body" id="about-body">
+            I'm Aryan — a full-stack AI developer working where language models meet product
+            engineering. I spend my days around RAG pipelines, AI agents and the real-time web apps
+            people use them through. I like taking an idea from model to pixel — and running the
+            hackathons where other people do the same.
+          </p>
+        </div>
+      </div>
+      <div class="scroll-cue" id="cue" aria-hidden="true">
+        <span class="scroll-cue-label">Scroll</span>
+        <span class="scroll-cue-track"><span class="scroll-cue-dot"></span></span>
+      </div>
+    </section>
+
+    <!-- ───────── Résumé (each entry is one camera stop) ───────── -->
+    <section class="resume" id="resume">
+      <h2 class="resume-title reveal">Résumé</h2>
+      <div class="timeline">
+
+        <div class="tl-entry" data-point="focus-1">
+          <span class="tl-dot tl-item" aria-hidden="true"></span>
+          <div class="tl-body">
+            <div class="tl-period tl-item">2023 – Now</div>
+            <div class="tl-head tl-item"><h3 class="tl-place">Meerut Institute of Engineering and Technology</h3></div>
+            <div class="tl-role tl-item">B.Tech in Information Technology</div>
+            <ul class="tl-points tl-item">
+              <li>GPA 7.5 / 10</li>
+              <li>Coursework: Fundamentals of Data Structures and Algorithms</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tl-entry" data-point="focus-2">
+          <span class="tl-dot tl-item" aria-hidden="true"></span>
+          <div class="tl-body">
+            <div class="tl-period tl-item">Jun – Aug 2026</div>
+            <div class="tl-head tl-item"><h3 class="tl-place">Nuberg Engineering Ltd · Noida</h3></div>
+            <div class="tl-role tl-item">Full Stack AI Developer Intern</div>
+            <ul class="tl-points tl-item">
+              <li>Built ShareDesk Workplace, an AI-powered enterprise collaboration platform, in React</li>
+              <li>Shipped AI features: semantic document search and contextual Q&amp;A</li>
+              <li>Analysed business data and built interactive dashboards for automation</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tl-entry" data-point="focus-3">
+          <span class="tl-dot tl-item" aria-hidden="true"></span>
+          <div class="tl-body">
+            <div class="tl-period tl-item">2025 – Now</div>
+            <div class="tl-head tl-item"><h3 class="tl-place">Fetch.ai × Innovation Lab · Remote</h3></div>
+            <div class="tl-role tl-item">R&amp;D Head · Campus Ambassador</div>
+            <ul class="tl-points tl-item">
+              <li>Work on AI agents with the Innovation Lab team</li>
+              <li>Organised hackathons, including the one at BSE Noida</li>
+              <li>Delivered a session at IIT Mandi on Fetch.ai and innovation</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tl-entry" data-point="focus-4">
+          <span class="tl-dot tl-item" aria-hidden="true"></span>
+          <div class="tl-body">
+            <div class="tl-period tl-item">2024 – 2026</div>
+            <div class="tl-head tl-item"><h3 class="tl-place">CXI-MIET · Tech Society of MIET</h3></div>
+            <div class="tl-role tl-item">Coordinator</div>
+            <ul class="tl-points tl-item">
+              <li>Supported 4+ hackathons and 10+ tech sessions for the campus tech society</li>
+              <li>Reached 400+ students across those events</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tl-entry" data-point="focus-5">
+          <span class="tl-dot tl-item" aria-hidden="true"></span>
+          <div class="tl-body">
+            <div class="tl-period tl-item">On the side</div>
+            <div class="tl-head tl-item"><h3 class="tl-place">Content Creator</h3></div>
+            <div class="tl-group tl-item">
+              <div class="tl-group-head">
+                <span>@aryanty4gi</span>
+                <span class="tl-group-sub">video creator on Instagram and YouTube</span>
+              </div>
+              <ul class="tl-points">
+                <li>Multiple Instagram video projects past 1M views</li>
+                <li>Vlogs on YouTube</li>
+              </ul>
+              <div class="tl-logos">
+                <a class="tl-logo" href="https://www.instagram.com/aryanty4gi/" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="0.9" fill="currentColor" stroke="none"/></svg>
+                </a>
+                <a class="tl-logo" href="https://www.youtube.com/@aryanty4gi" target="_blank" rel="noopener" aria-label="YouTube" title="YouTube">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.76-1.77C18.28 5 12 5 12 5s-6.28 0-7.84.43A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.76 1.77C5.72 19 12 19 12 19s6.28 0 7.84-.43a2.5 2.5 0 0 0 1.76-1.77A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8zM10 15V9l5.2 3L10 15z"/></svg>
+                </a>
+                <a class="tl-logo" href="https://www.linkedin.com/in/aryanty4gi/" target="_blank" rel="noopener" aria-label="LinkedIn" title="LinkedIn">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.94 8.5H3.56V20h3.38V8.5zM5.25 3A1.97 1.97 0 1 0 5.25 6.94 1.97 1.97 0 0 0 5.25 3zM20.44 13.4c0-3.2-1.7-5.15-4.3-5.15a3.7 3.7 0 0 0-3.2 1.7V8.5H9.56V20h3.38v-6.1c0-1.6.86-2.6 2.1-2.6 1.3 0 2.02.9 2.02 2.6V20h3.38v-6.6z"/></svg>
+                </a>
+                <a class="tl-logo" href="https://github.com/aryanty4gi" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.37-3.37-1.37-.46-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.36 9.36 0 0 1 12 6.96c.85 0 1.71.12 2.5.35 1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.81 0 .27.18.6.69.49A10.26 10.26 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ───────── Works (vertical scroll pinned into a sideways gallery) ───────── -->
+    <section class="works" id="works">
+      <div class="wk-gallery" id="gallery">
+        <div class="wk-gallery-sticky">
+          <span class="wk-gallery-title">Works</span>
+
+          <div class="wk-track" id="track">
+
+            <div class="wk-card">
+              <div class="wk-card-head">
+                <span class="wk-card-no">01</span>
+                <h3 class="wk-card-title">AI Products</h3>
+                <span class="wk-card-tagline">Full-stack · LLM-powered</span>
+              </div>
+              <div class="wk-card-cover wk-cover-pose" style="background-image: url(assets/character/pose-5.webp), linear-gradient(#6f906f, #c9c9a2)" aria-hidden="true"></div>
+              <div class="wk-card-body">
+                <ul class="wk-list">
+                  <li class="wk-line"><button class="wk-line-btn" data-work="sharedesk"><span class="wk-line-name">ShareDesk Workplace</span><span class="wk-line-meta"><span class="wk-line-num">Live</span><span class="wk-line-tag">RAG</span><span class="wk-line-tag">WebRTC</span></span></button></li>
+                  <li class="wk-line"><button class="wk-line-btn" data-work="farmhelp"><span class="wk-line-name">Farm Help AI</span><span class="wk-line-meta"><span class="wk-line-num">Open source</span><span class="wk-line-tag">MERN</span><span class="wk-line-tag">Voice</span></span></button></li>
+                  <li class="wk-line"><button class="wk-line-btn" data-work="alumni"><span class="wk-line-name">Alumni Connect</span><span class="wk-line-meta"><span class="wk-line-num">Open source</span><span class="wk-line-tag">Next.js</span><span class="wk-line-tag">GenAI</span></span></button></li>
+                </ul>
+                <div class="wk-foot">
+                  <p class="wk-foot-line"><span class="wk-foot-label">Award</span><span class="wk-foot-val accent">1st place · Amplified HCLTech Hackathon</span></p>
+                </div>
+              </div>
+            </div>
+
+            <div class="wk-card">
+              <div class="wk-card-head">
+                <span class="wk-card-no">02</span>
+                <h3 class="wk-card-title">Community</h3>
+                <span class="wk-card-tagline">400+ students ｜ hackathons &amp; talks</span>
+              </div>
+              <div class="wk-card-cover wk-cover-pose" style="background-image: url(assets/character/pose-1.webp), linear-gradient(#6f906f, #c9c9a2)" aria-hidden="true"></div>
+              <div class="wk-card-body">
+                <ul class="wk-list">
+                  <li class="wk-line"><button class="wk-line-btn" data-work="iitmandi"><span class="wk-line-name">Session at IIT Mandi</span><span class="wk-line-meta"><span class="wk-line-num">Speaker</span><span class="wk-line-tag">Fetch.ai</span></span></button></li>
+                  <li class="wk-line"><button class="wk-line-btn" data-work="bse"><span class="wk-line-name">BSE Noida Hackathon</span><span class="wk-line-meta"><span class="wk-line-num">Organiser</span></span></button></li>
+                  <li class="wk-line"><button class="wk-line-btn" data-work="cxi"><span class="wk-line-name">CXI-MIET hackathons &amp; sessions</span><span class="wk-line-meta"><span class="wk-line-num">4+ · 10+</span><span class="wk-line-tag">Coordinator</span></span></button></li>
+                  <li class="wk-line"><button class="wk-line-btn" data-work="fetch"><span class="wk-line-name">Fetch.ai Innovation Lab</span><span class="wk-line-meta"><span class="wk-line-num">R&amp;D Head</span><span class="wk-line-tag">AI agents</span></span></button></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="wk-card">
+              <div class="wk-card-head">
+                <span class="wk-card-no">03</span>
+                <h3 class="wk-card-title">Toolkit</h3>
+                <span class="wk-card-tagline">What I reach for</span>
+              </div>
+              <div class="wk-card-cover wk-cover-pose" style="background-image: url(assets/character/pose-2.webp), linear-gradient(#6f906f, #c9c9a2)" aria-hidden="true"></div>
+              <div class="wk-card-body">
+                <div class="wk-sub">
+                  <div class="wk-sub-head">AI / LLM</div>
+                  <ul class="wk-list"><li class="wk-line"><div class="wk-line-btn is-static"><span class="wk-line-name">Generative AI · LLMs · Agentic AI · RAG · LangChain · OpenAI API · Gemini API</span></div></li></ul>
+                </div>
+                <div class="wk-sub">
+                  <div class="wk-sub-head">Frontend</div>
+                  <ul class="wk-list"><li class="wk-line"><div class="wk-line-btn is-static"><span class="wk-line-name">React.js · Next.js · TypeScript · Tailwind CSS · HTML / CSS</span></div></li></ul>
+                </div>
+                <div class="wk-sub">
+                  <div class="wk-sub-head">Languages &amp; data</div>
+                  <ul class="wk-list"><li class="wk-line"><div class="wk-line-btn is-static"><span class="wk-line-name">Python · TypeScript · MongoDB · Supabase · PostgreSQL</span></div></li></ul>
+                </div>
+                <div class="wk-sub">
+                  <div class="wk-sub-head">Tools</div>
+                  <ul class="wk-list"><li class="wk-line"><div class="wk-line-btn is-static"><span class="wk-line-name">GitHub · Power BI · MS Excel · Postman</span></div></li></ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="wk-card">
+              <div class="wk-card-head">
+                <span class="wk-card-no">04</span>
+                <h3 class="wk-card-title">Certifications</h3>
+                <span class="wk-card-tagline">Cloud · AI · Data</span>
+              </div>
+              <div class="wk-card-cover wk-cover-pose" style="background-image: url(assets/character/pose-3.webp), linear-gradient(#6f906f, #c9c9a2)" aria-hidden="true"></div>
+              <div class="wk-card-body">
+                <ul class="wk-list">
+                  <li class="wk-line"><div class="wk-line-btn is-static"><span class="wk-line-name">Azure AI Fundamentals (AI-900)</span><span class="wk-line-meta"><span class="wk-line-num">Microsoft</span></span></div></li>
+                  <li class="wk-line"><div class="wk-line-btn is-static"><span class="wk-line-name">Vertex AI</span><span class="wk-line-meta"><span class="wk-line-num">Google Cloud Skills Boost</span><span class="wk-line-tag">Mar 2025</span></span></div></li>
+                  <li class="wk-line"><div class="wk-line-btn is-static"><span class="wk-line-name">Data Analytics Job Simulation</span><span class="wk-line-meta"><span class="wk-line-num">Deloitte Australia · Forage</span><span class="wk-line-tag">Aug 2025</span></span></div></li>
+                  <li class="wk-line"><div class="wk-line-btn is-static"><span class="wk-line-name">Data Analyst Certification</span><span class="wk-line-meta"><span class="wk-line-num">OneRoadmap</span></span></div></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="wk-card">
+              <div class="wk-card-head">
+                <span class="wk-card-no">05</span>
+                <h3 class="wk-card-title">Say hello</h3>
+                <span class="wk-card-tagline">Email is the fastest way to reach me</span>
+              </div>
+              <div class="wk-card-cover wk-cover-pose" style="background-image: url(assets/character/pose-4.webp), linear-gradient(#6f906f, #c9c9a2)" aria-hidden="true"></div>
+              <div class="wk-card-body">
+                <ul class="wk-list">
+                  <li class="wk-line"><a class="wk-line-btn" href="mailto:imaryantyagi08@gmail.com"><span class="wk-line-name">imaryantyagi08@gmail.com</span><span class="wk-line-meta"><span class="wk-line-num">Email ↗</span></span></a></li>
+                  <li class="wk-line"><a class="wk-line-btn" href="https://www.linkedin.com/in/aryanty4gi/" target="_blank" rel="noopener"><span class="wk-line-name">linkedin.com/in/aryanty4gi</span><span class="wk-line-meta"><span class="wk-line-num">LinkedIn ↗</span></span></a></li>
+                  <li class="wk-line"><a class="wk-line-btn" href="https://github.com/aryanty4gi" target="_blank" rel="noopener"><span class="wk-line-name">github.com/aryanty4gi</span><span class="wk-line-meta"><span class="wk-line-num">GitHub ↗</span></span></a></li>
+                  <li class="wk-line"><a class="wk-line-btn" href="https://www.youtube.com/@aryanty4gi" target="_blank" rel="noopener"><span class="wk-line-name">youtube.com/@aryanty4gi</span><span class="wk-line-meta"><span class="wk-line-num">YouTube ↗</span></span></a></li>
+                  <li class="wk-line"><a class="wk-line-btn" href="tel:+917906929062"><span class="wk-line-name">+91 79069 29062</span><span class="wk-line-meta"><span class="wk-line-num">Phone</span></span></a></li>
+                  <li class="wk-line"><a class="wk-line-btn" href="assets/Aryan-Tyagi-CV.pdf" target="_blank" rel="noopener"><span class="wk-line-name">Download my résumé</span><span class="wk-line-meta"><span class="wk-line-num">PDF ↓</span></span></a></li>
+                </ul>
+                <div class="wk-foot">
+                  <p class="wk-foot-line">© 2026 Aryan Tyagi · Meerut, Uttar Pradesh</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="wk-progress" aria-hidden="true"><div class="wk-progress-fill" id="progress"></div></div>
+          <span class="wk-hint" id="hint" aria-hidden="true">Keep scrolling</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Full-screen work detail (filled by main.js) -->
+  <div id="detail-root"></div>
+
+  <script type="module" src="assets/js/main.js"></script>
+</body>
+</html>
